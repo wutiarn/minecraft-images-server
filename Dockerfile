@@ -1,4 +1,6 @@
-FROM python:3.11
+FROM ubuntu:22.04
+
+RUN apt update && apt install -y --no-install-recommends python3 python3-pip sqlite3
 
 WORKDIR /app
 COPY requirements.txt .
