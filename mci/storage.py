@@ -1,10 +1,9 @@
 import datetime
-import pathlib
 
+import filetype
 import requests
 
 from mci import config, db
-import filetype
 
 
 def create_image(url: str):
