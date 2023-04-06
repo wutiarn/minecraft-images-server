@@ -2,7 +2,7 @@ import sqlite3
 import time
 
 from mci.db import DATABASE_LOCATION
-from mci.db.model import ImageStatus
+from mci.db.model import ImageStatus, ImageMetadata
 
 
 def get_connection() -> sqlite3.Connection:
@@ -43,3 +43,26 @@ def update_metadata(
                   "sha256hash": sha256hash
               })
     c.commit()
+
+
+def load_image(c: sqlite3.Connection, image_id: int):
+    row = c.execute("SELECT ("
+                    "status, "
+                    "created_at, "
+                    "path, "
+                    "width, "
+                    "height, "
+                    "mimetype, "
+                    "sha256hash"
+                    ") FROM images WHERE id = :id", {"id": image_id}).fetchone()
+
+    return ImageMetadata(
+        id=image_id,
+        status=row[0],
+        created_at=row[1],
+        path=row[2],
+        width=row[3],
+        height=row[4],
+        mimetype=row[5],
+        sha256hash=row[6]
+    )
