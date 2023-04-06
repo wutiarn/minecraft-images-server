@@ -19,7 +19,7 @@ def handle_event(event: dict):
         file_id = _get_max_photo_resolution_file_id(message["photo"])
 
     if file_id:
-        storage.download_file(1, _get_file_download_url(file_id))
+        storage.create_image(_get_file_download_url(file_id))
 
 
 def _get_file_download_url(file_id: str) -> str:
