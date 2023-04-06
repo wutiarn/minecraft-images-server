@@ -10,6 +10,7 @@ def get_connection() -> sqlite3.Connection:
 
 
 def create(c: sqlite3.Connection) -> int:
-    result = c.execute("INSERT INTO images (status, created_at) values (:status, :created_at)",
+    result = c.execute("INSERT INTO images (status, created_at) values (:status, :created_at) RETURNING (id)",
                        {"status": ImageStatus.PENDING.value, "created_at": int(time.time())})
-    return result.lastrowid
+    returned = result.fetchone()
+    return returned[0]
