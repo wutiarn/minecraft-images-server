@@ -1,7 +1,7 @@
 import logging
 
 from flask import Flask, abort, request
-from mci import config
+from mci import config, telegram
 import secrets
 
 flask_app = Flask(__name__)
@@ -14,7 +14,7 @@ def handle_telegram_hook(token: str):
     if not secrets.compare_digest(token, config.telegram_token):
         return abort(404)
     logger.info(f"Received webhook: {request.data.decode()}")
-    data = request.json
+    telegram.handle_event(request.json)
     return "OK"
 
 
