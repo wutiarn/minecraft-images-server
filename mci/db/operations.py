@@ -4,7 +4,7 @@ import time
 from mci import config
 from mci.db.model import ImageStatus
 
-DATABASE_LOCATION = config.storage_dir.joinpath("db.sqlite").absolute()
+DATABASE_LOCATION = config.storage_dir.joinpath("db.sqlite3").absolute()
 
 
 def get_connection() -> sqlite3.Connection:

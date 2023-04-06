@@ -2,6 +2,7 @@ import logging
 
 from flask import Flask, abort, request
 from mci import config, telegram
+from mci.db import migrations
 import secrets
 
 flask_app = Flask(__name__)
@@ -20,4 +21,5 @@ def handle_telegram_hook(token: str):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] [%(threadName)s] %(name)s - %(message)s")
+    migrations.apply_migrations()
     flask_app.run(debug=True, host="0.0.0.0", port=8080)
