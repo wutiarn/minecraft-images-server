@@ -20,7 +20,10 @@ def handle_telegram_hook(token: str):
     if not secrets.compare_digest(token, config.telegram_token):
         return abort(404)
     logger.info(f"Received webhook: {request.data.decode()}")
-    telegram.handle_event(request.json)
+    try:
+        telegram.handle_event(request.json)
+    except Exception:
+        logger.error("Failed to handle webhook", exc_info=True)
     return "OK"
 
 
