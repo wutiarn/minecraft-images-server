@@ -46,15 +46,16 @@ def update_metadata(
 
 
 def load_image(c: sqlite3.Connection, image_id: int):
-    row = c.execute("SELECT ("
+    result = c.execute("SELECT "
                     "status, "
                     "created_at, "
                     "path, "
                     "width, "
                     "height, "
                     "mimetype, "
-                    "sha256hash"
-                    ") FROM images WHERE id = :id", {"id": image_id}).fetchone()
+                    "sha256hash "
+                    "FROM images WHERE id = :id", {"id": image_id})
+    row = result.fetchone()
 
     return ImageMetadata(
         id=image_id,

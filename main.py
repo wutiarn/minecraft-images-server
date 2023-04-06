@@ -20,7 +20,7 @@ def handle_telegram_hook(token: str):
     return "OK"
 
 
-@flask_app.route(f"/i/<image_id>/meta.json", methods=["POST"])
+@flask_app.route(f"/i/<image_id>/meta.json", methods=["GET"])
 def get_metadata(image_id: int):
     with db.get_connection() as c:
         image = db.load_image(c, image_id)
