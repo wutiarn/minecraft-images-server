@@ -15,6 +15,17 @@ def handle_event(event: dict):
         return
     message = event["message"]
 
+    from_id = message["from"]["id"]
+    chat_id = message["chat"]["id"]
+    message_id = message["message_id"]
+    if from_id not in config.telegram_user_whitelist:
+        send_message(
+            chat=chat_id,
+            reply_message_id=message_id,
+            text=f"User {from_id} is not whitelisted"
+        )
+        return
+
     file_id = None
     if "document" in message:
         file_id = message["document"]["file_id"]
