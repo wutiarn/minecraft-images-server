@@ -1,14 +1,14 @@
 import datetime
+import hashlib
 
+import PIL.Image
 import filetype
 import requests
 
 from mci import config, db
-import PIL.Image
-import hashlib
 
 
-def create_image(url: str):
+def create_image(url: str) -> int:
     with db.get_connection() as c:
         image_id = db.create(c)
         now = datetime.datetime.now()
@@ -40,4 +40,4 @@ def create_image(url: str):
             mimetype=type.mime,
             sha256hash=hash.hexdigest()
         )
-    pass
+    return image_id

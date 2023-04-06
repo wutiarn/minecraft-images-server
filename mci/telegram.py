@@ -1,9 +1,13 @@
+import logging
+
 import requests
 
 from mci import storage, config
 
 _base_url = "https://api.telegram.org"
 _base_methods_url = f"{_base_url}/bot{config.telegram_token}"
+
+logger = logging.getLogger("mci.telegram")
 
 
 def handle_event(event: dict):
@@ -19,7 +23,12 @@ def handle_event(event: dict):
         file_id = _get_max_photo_resolution_file_id(message["photo"])
 
     if file_id:
-        storage.create_image(_get_file_download_url(file_id))
+        image_id = storage.create_image(_get_file_download_url(file_id))
+        send_message(
+            chat=message["chat"]["id"],
+            reply_message_id=message["message_id"],
+            text=f"Uploaded image id: #{image_id}\n{config.base_url}/i/{image_id}"
+        )
 
 
 def _get_file_download_url(file_id: str) -> str:
@@ -38,3 +47,15 @@ def _get_max_photo_resolution_file_id(photos: list[dict]) -> str:
             max_file_size = file_size
             file_id = photo["file_id"]
     return file_id
+
+
+def send_message(chat: int, text: str, reply_message_id: int):
+    data = {
+        "chat_id": chat,
+        "text": text
+    }
+    if reply_message_id:
+        data["reply_to_message_id"] = reply_message_id
+    response = requests.post(f"{_base_methods_url}/sendMessage", data=data)
+    if response.status_code != 200:
+        logger.warning(f"Failed to send message: telegram returned {response.text}")
