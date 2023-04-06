@@ -59,7 +59,7 @@ def load_image(c: sqlite3.Connection, image_id: int):
 
     return ImageMetadata(
         id=image_id,
-        status=row[0],
+        status=ImageStatus(row[0]),
         created_at=row[1],
         path=row[2],
         width=row[3],

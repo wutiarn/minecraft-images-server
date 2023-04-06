@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
 
+from dataclasses_json import dataclass_json
+
 
 class ImageStatus(Enum):
     PENDING = 1
@@ -8,6 +10,7 @@ class ImageStatus(Enum):
     DELETED = 3
 
 
+@dataclass_json
 @dataclass
 class ImageMetadata:
     id: int

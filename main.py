@@ -5,6 +5,9 @@ from flask import Flask, abort, request
 from mci import config, telegram, db
 from mci.db import migrations
 import secrets
+from dataclasses_json import dataclass_json
+
+from mci.db.model import ImageStatus
 
 flask_app = Flask(__name__)
 
@@ -24,7 +27,19 @@ def handle_telegram_hook(token: str):
 def get_metadata(image_id: int):
     with db.get_connection() as c:
         image = db.load_image(c, image_id)
-    return json.dumps(image)
+    if image.status != ImageStatus.OK:
+        return abort(404)
+    extension = image.path.split(".")[-1]
+    url = f"{config.base_url}/storage/i/{image_id}.{extension}"
+    return {
+        "id": image.id,
+        "url": url,
+        "created_at": image.created_at,
+        "width": image.width,
+        "height": image.height,
+        "mimetype": image.mimetype,
+        "sha256hash": image.sha256hash
+    }
 
 
 if __name__ == '__main__':
