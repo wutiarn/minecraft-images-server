@@ -5,3 +5,4 @@ filetype==1.2.0
 pillow==9.5.0
 dataclasses-json==0.5.7
 pytz==2023.3
+waitress==2.1.2

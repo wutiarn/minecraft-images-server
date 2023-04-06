@@ -1,7 +1,9 @@
 import datetime
 import logging
+import os
 import secrets
 
+import waitress as waitress
 from flask import Flask, abort, request, send_file, render_template
 
 from mci import config, telegram, db
@@ -25,17 +27,17 @@ def handle_telegram_hook(token: str):
 @flask_app.route(f"/i/<image_id>", methods=["GET"])
 def get_metadata_page(image_id: int):
     image = _get_image(image_id)
-    date = datetime.datetime.fromtimestamp(image.created_at)\
-        .astimezone(config.timezone)\
+    date = datetime.datetime.fromtimestamp(image.created_at) \
+        .astimezone(config.timezone) \
         .strftime(config.timestamp_format)
-    url = _get_storage_url(image)
+    url = f"/{_get_storage_url(image)}"
     return render_template("image.html", image=image, date=date, url=url)
 
 
 @flask_app.route(f"/i/<image_id>/meta.json", methods=["GET"])
 def get_metadata_json(image_id: int):
     image = _get_image(image_id)
-    url = _get_storage_url(image)
+    url = f"{config.base_url}/{_get_storage_url(image)}"
     return {
         "id": image.id,
         "url": url,
@@ -62,11 +64,16 @@ def _get_image(image_id: int) -> ImageMetadata:
         raise abort(404)
     return image
 
+
 def _get_storage_url(image: ImageMetadata):
     extension = image.path.split(".")[-1]
-    return f"{config.base_url}/storage/i/{image.id}.{extension}"
+    return f"storage/i/{image.id}.{extension}"
+
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] [%(threadName)s] %(name)s - %(message)s")
     migrations.apply_migrations()
-    flask_app.run(debug=True, host="0.0.0.0", port=8080)
+    if os.getenv("DEV"):
+        flask_app.run(debug=True, host="0.0.0.0", port=8080)
+    else:
+        waitress.serve(flask_app)
