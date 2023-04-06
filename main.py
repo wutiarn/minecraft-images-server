@@ -1,7 +1,7 @@
 import json
 import logging
 
-from flask import Flask, abort, request
+from flask import Flask, abort, request, send_file
 from mci import config, telegram, db
 from mci.db import migrations
 import secrets
@@ -40,6 +40,17 @@ def get_metadata(image_id: int):
         "mimetype": image.mimetype,
         "sha256hash": image.sha256hash
     }
+
+
+@flask_app.route(f"/storage/i/<filename>", methods=["GET"])
+def get_file(filename: str):
+    image_id = int(filename.split(".")[0])
+    with db.get_connection() as c:
+        image = db.load_image(c, image_id)
+    if image.status != ImageStatus.OK:
+        return abort(404)
+    file = config.storage_dir.joinpath(image.path)
+    return send_file(file, mimetype=image.mimetype, download_name=filename)
 
 
 if __name__ == '__main__':
