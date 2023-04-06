@@ -1,13 +1,12 @@
-import json
+import datetime
 import logging
+import secrets
 
-from flask import Flask, abort, request, send_file
+from flask import Flask, abort, request, send_file, render_template
+
 from mci import config, telegram, db
 from mci.db import migrations
-import secrets
-from dataclasses_json import dataclass_json
-
-from mci.db.model import ImageStatus
+from mci.db.model import ImageStatus, ImageMetadata
 
 flask_app = Flask(__name__)
 
@@ -23,14 +22,20 @@ def handle_telegram_hook(token: str):
     return "OK"
 
 
+@flask_app.route(f"/i/<image_id>", methods=["GET"])
+def get_metadata_page(image_id: int):
+    image = _get_image(image_id)
+    date = datetime.datetime.fromtimestamp(image.created_at)\
+        .astimezone(config.timezone)\
+        .strftime(config.timestamp_format)
+    url = _get_storage_url(image)
+    return render_template("image.html", image=image, date=date, url=url)
+
+
 @flask_app.route(f"/i/<image_id>/meta.json", methods=["GET"])
-def get_metadata(image_id: int):
-    with db.get_connection() as c:
-        image = db.load_image(c, image_id)
-    if image.status != ImageStatus.OK:
-        return abort(404)
-    extension = image.path.split(".")[-1]
-    url = f"{config.base_url}/storage/i/{image_id}.{extension}"
+def get_metadata_json(image_id: int):
+    image = _get_image(image_id)
+    url = _get_storage_url(image)
     return {
         "id": image.id,
         "url": url,
@@ -45,13 +50,21 @@ def get_metadata(image_id: int):
 @flask_app.route(f"/storage/i/<filename>", methods=["GET"])
 def get_file(filename: str):
     image_id = int(filename.split(".")[0])
-    with db.get_connection() as c:
-        image = db.load_image(c, image_id)
-    if image.status != ImageStatus.OK:
-        return abort(404)
+    image = _get_image(image_id)
     file = config.storage_dir.joinpath(image.path)
     return send_file(file, mimetype=image.mimetype, download_name=filename)
 
+
+def _get_image(image_id: int) -> ImageMetadata:
+    with db.get_connection() as c:
+        image = db.load_image(c, image_id)
+    if image.status != ImageStatus.OK:
+        raise abort(404)
+    return image
+
+def _get_storage_url(image: ImageMetadata):
+    extension = image.path.split(".")[-1]
+    return f"{config.base_url}/storage/i/{image.id}.{extension}"
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] [%(threadName)s] %(name)s - %(message)s")

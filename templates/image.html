@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <title>Image #{{ image.id }}</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h2>Image #{{ image.id }}</h2>
+<p>Created at: {{ date }}</p>
+<p>Resolution: {{ image.width }}x{{ image.height }}</p>
+<p>Mime: {{ image.mimetype }}</p>
+<p>Hash: {{ image.sha256hash }}</p>
+<a href="{{ url }}"><img src="{{ url }}"></a>
+<p></p>
+</body>
+</html>
