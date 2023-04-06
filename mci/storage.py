@@ -18,8 +18,10 @@ def create_image(url: str):
                 response.raise_for_status()
                 for chunk in response.iter_content(chunk_size=1 * 1024 * 1024):
                     f.write(chunk)
-            type = filetype.guess(file)
-            target_file = directory.joinpath(f"{image_id}.{type.extension}")
-            file = file.rename(target_file)
+
+        type = filetype.guess(file)
+        target_file = directory.joinpath(f"{image_id}.{type.extension}")
+        file = file.rename(target_file)
+
         path = str(file.relative_to(config.storage_dir))
     pass
