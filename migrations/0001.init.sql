@@ -6,5 +6,6 @@ CREATE TABLE images
     path       TEXT,
     width      INTEGER,
     height     INTEGER,
-    format     TEXT
+    mimetype   TEXT,
+    sha256hash TEXT
 )
