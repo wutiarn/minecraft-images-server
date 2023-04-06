@@ -9,7 +9,7 @@ flask_app = Flask(__name__)
 logger = logging.getLogger("main")
 
 
-@flask_app.route(f"/tg/hook/<token>")
+@flask_app.route(f"/tg/hook/<token>", methods=["POST"])
 def handle_telegram_hook(token: str):
     if not secrets.compare_digest(token, config.telegram_token):
         return abort(404)
