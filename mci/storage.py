@@ -2,6 +2,7 @@ import datetime
 import hashlib
 
 import PIL.Image
+import PIL.ExifTags
 import filetype
 import requests
 
@@ -27,8 +28,9 @@ def create_image(url: str) -> int:
         file = file.rename(target_file)
 
         with PIL.Image.open(file) as pil_image:
-            width = pil_image.width
-            height = pil_image.height
+            image = _rotate_by_exif(pil_image)
+            width = image.width
+            height = image.height
 
         path = str(file.relative_to(config.storage_dir))
         db.update_metadata(
@@ -41,3 +43,20 @@ def create_image(url: str) -> int:
             sha256hash=hash.hexdigest()
         )
     return image_id
+
+
+def _rotate_by_exif(image: PIL.Image):
+    exif_orientation_tag_id = 274  # See PIL.ExifTags.TAGS
+    exif_tags = image._getexif()
+    if exif_orientation_tag_id not in exif_tags:
+        return image
+
+    rotation_tag_value = exif_tags[exif_orientation_tag_id]
+    if rotation_tag_value == 6:
+        return image.rotate(90, expand=True)
+    elif rotation_tag_value == 3:
+        return image.rotate(180, expand=True)
+    elif rotation_tag_value == 8:
+        return image.rotate(270, expand=True)
+    else:
+        return image
