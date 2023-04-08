@@ -56,6 +56,8 @@ def load_image(c: sqlite3.Connection, image_id: int):
                     "sha256hash "
                     "FROM images WHERE id = :id", {"id": image_id})
     row = result.fetchone()
+    if not row:
+        return None
 
     return ImageMetadata(
         id=image_id,

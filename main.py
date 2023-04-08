@@ -13,6 +13,7 @@ from mci.db.model import ImageStatus, ImageMetadata
 flask_app = Flask(__name__)
 
 logger = logging.getLogger("main")
+_storage_base_url = "/storage/i"
 
 
 @flask_app.route(f"/tg/hook/<token>", methods=["POST"])
@@ -33,14 +34,14 @@ def get_metadata_page(image_id: int):
     date = datetime.datetime.fromtimestamp(image.created_at) \
         .astimezone(config.timezone) \
         .strftime(config.timestamp_format)
-    url = f"/{_get_storage_url(image)}"
-    return render_template("image.html", image=image, date=date, url=url)
+    url = _get_storage_url(image_id)
+    return render_template("image.html", image=image, date=date, storage_url=url)
 
 
 @flask_app.route(f"/i/<image_id>/meta.json", methods=["GET"])
 def get_metadata_json(image_id: int):
     image = _get_image(image_id)
-    url = f"{config.base_url}/{_get_storage_url(image)}"
+    url = _get_storage_url(image_id)
     return {
         "id": image.id,
         "url": url,
@@ -52,25 +53,26 @@ def get_metadata_json(image_id: int):
     }
 
 
-@flask_app.route(f"/storage/i/<filename>", methods=["GET"])
-def get_file(filename: str):
-    image_id = int(filename.split(".")[0])
+@flask_app.route(f"{_storage_base_url}/<image_id>", methods=["GET"])
+def get_file(image_id: int):
     image = _get_image(image_id)
     file = config.storage_dir.joinpath(image.path)
-    return send_file(file, mimetype=image.mimetype, download_name=filename)
+    extension = image.path.split(".")[-1]
+    return send_file(file, mimetype=image.mimetype, download_name=f"{image_id}.{extension}")
 
 
 def _get_image(image_id: int) -> ImageMetadata:
     with db.get_connection() as c:
         image = db.load_image(c, image_id)
+    if not image:
+        abort(404)
     if image.status != ImageStatus.OK:
         raise abort(404)
     return image
 
 
-def _get_storage_url(image: ImageMetadata):
-    extension = image.path.split(".")[-1]
-    return f"storage/i/{image.id}.{extension}"
+def _get_storage_url(image_id: int):
+    return f"{_storage_base_url}/{image_id}"
 
 
 if __name__ == '__main__':

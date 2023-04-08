@@ -10,7 +10,11 @@
 <p>Resolution: {{ image.width }}x{{ image.height }}</p>
 <p>Mime: {{ image.mimetype }}</p>
 <p>Hash: {{ image.sha256hash }}</p>
-<a href="{{ url }}"><img src="{{ url }}" width="720px"></a>
+<p>
+    <a href="/i/{{ image.id | int - 1 }}">Prev</a>
+    <a href="/i/{{ image.id | int + 1 }}">Next</a>
+</p>
+<a href="{{ storage_url }}"><img src="{{ storage_url }}" width="720px"></a>
 <p></p>
 </body>
 </html>
