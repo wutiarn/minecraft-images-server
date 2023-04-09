@@ -9,15 +9,22 @@ def get_connection() -> sqlite3.Connection:
     return sqlite3.connect(DATABASE_LOCATION)
 
 
-def create(c: sqlite3.Connection) -> int:
-    result = c.execute("INSERT INTO images (status, created_at) values (:status, :created_at) RETURNING (id)",
-                       {"status": ImageStatus.PENDING.value, "created_at": int(time.time())})
+def create(c: sqlite3.Connection, from_id: int, message_compound_id: str) -> int:
+    result = c.execute(
+        "INSERT INTO images (status, created_at, from_id, message_compound_id) "
+        "values (:status, :created_at, :from_id, :message_compound_id) RETURNING (id)",
+        {
+            "status": ImageStatus.PENDING.value,
+            "created_at": int(time.time()),
+            "from_id": from_id,
+            "message_compound_id": message_compound_id
+        })
     returned = result.fetchone()
     c.commit()
     return returned[0]
 
 
-def update_metadata(
+def update_image_metadata(
         c: sqlite3.Connection,
         image_id: int,
         path: str,
@@ -47,14 +54,14 @@ def update_metadata(
 
 def load_image(c: sqlite3.Connection, image_id: int):
     result = c.execute("SELECT "
-                    "status, "
-                    "created_at, "
-                    "path, "
-                    "width, "
-                    "height, "
-                    "mimetype, "
-                    "sha256hash "
-                    "FROM images WHERE id = :id", {"id": image_id})
+                       "status, "
+                       "created_at, "
+                       "path, "
+                       "width, "
+                       "height, "
+                       "mimetype, "
+                       "sha256hash "
+                       "FROM images WHERE id = :id", {"id": image_id})
     row = result.fetchone()
     if not row:
         return None
