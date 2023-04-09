@@ -72,6 +72,7 @@ def load_image(c: sqlite3.Connection, image_id: int):
     result = c.execute("SELECT "
                        "status, "
                        "created_at, "
+                       "text, "
                        "path, "
                        "width, "
                        "height, "
@@ -86,9 +87,10 @@ def load_image(c: sqlite3.Connection, image_id: int):
         id=image_id,
         status=ImageStatus(row[0]),
         created_at=row[1],
-        path=row[2],
-        width=row[3],
-        height=row[4],
-        mimetype=row[5],
-        sha256hash=row[6]
+        text=row[2],
+        path=row[3],
+        width=row[4],
+        height=row[5],
+        mimetype=row[6],
+        sha256hash=row[7]
     )
