@@ -49,7 +49,8 @@ def get_metadata_json(image_id: int):
         "width": image.width,
         "height": image.height,
         "mimetype": image.mimetype,
-        "sha256hash": image.sha256hash
+        "sha256hash": image.sha256hash,
+        "description": image.text
     }
 
 
