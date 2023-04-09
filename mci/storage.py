@@ -48,7 +48,7 @@ def create_image(url: str) -> int:
 def _rotate_by_exif(image: PIL.Image):
     exif_orientation_tag_id = 274  # See PIL.ExifTags.TAGS
     exif_tags = image._getexif()
-    if exif_orientation_tag_id not in exif_tags:
+    if not exif_tags or exif_orientation_tag_id not in exif_tags:
         return image
 
     rotation_tag_value = exif_tags[exif_orientation_tag_id]
