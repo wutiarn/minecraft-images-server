@@ -11,7 +11,11 @@ logger = logging.getLogger("mci.telegram")
 
 
 def handle_event(event: dict):
-    message: dict = event.get("message") or event.get("edited_message")
+    message: dict = event.get("message")
+    is_edit = False
+    if not message:
+        message = event.get("edited_message")
+        is_edit = True
     if not message:
         return
 
@@ -37,16 +41,28 @@ def handle_event(event: dict):
         file_id = _get_max_photo_resolution_file_id(message["photo"])
 
     if file_id:
-        _handle_message(
+        image_id = _handle_message(
             from_id=from_id,
             chat_id=chat_id,
             message_id=message_id,
             text=text,
             file_id=file_id
         )
+        if not is_edit:
+            send_message(
+                chat=chat_id,
+                reply_message_id=message_id,
+                text=f"Image uploaded: #{image_id}\n{config.base_url}/i/{image_id}"
+            )
+        else:
+            send_message(
+                chat=chat_id,
+                reply_message_id=message_id,
+                text=f"Image #{image_id} edited\n{config.base_url}/i/{image_id}"
+            )
 
 
-def _handle_message(from_id: int, chat_id: int, message_id: int, text: str, file_id: str):
+def _handle_message(from_id: int, chat_id: int, message_id: int, text: str, file_id: str) -> int:
     message_compound_id = f"{chat_id}_{message_id}"
     with db.get_connection() as c:
         image_id = db.edit_message_details(c, message_compound_id=message_compound_id, text=text)
@@ -56,11 +72,7 @@ def _handle_message(from_id: int, chat_id: int, message_id: int, text: str, file
             url=_get_file_download_url(file_id),
             image_id=image_id
         )
-    send_message(
-        chat=chat_id,
-        reply_message_id=message_id,
-        text=f"Uploaded image id: #{image_id}\n{config.base_url}/i/{image_id}"
-    )
+        return image_id
 
 
 def _get_file_download_url(file_id: str) -> str:
