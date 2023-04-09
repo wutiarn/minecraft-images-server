@@ -11,15 +11,13 @@ logger = logging.getLogger("mci.telegram")
 
 
 def handle_event(event: dict):
-    if not "message" in event:
+    message: dict = event.get("message") or event.get("edited_message")
+    if not message:
         return
-    message: dict = event["message"]
 
     from_id = message["from"]["id"]
     chat_id = message["chat"]["id"]
     message_id = message["message_id"]
-    message_compound_id = f"{chat_id}_{message_id}"
-    message_text = None
 
     text = message.get("caption")
 
@@ -39,7 +37,7 @@ def handle_event(event: dict):
         file_id = _get_max_photo_resolution_file_id(message["photo"])
 
     if file_id:
-        _handle_new_upload(
+        _handle_message(
             from_id=from_id,
             chat_id=chat_id,
             message_id=message_id,
@@ -48,10 +46,12 @@ def handle_event(event: dict):
         )
 
 
-def _handle_new_upload(from_id: int, chat_id: int, message_id: int, text: str, file_id: str):
+def _handle_message(from_id: int, chat_id: int, message_id: int, text: str, file_id: str):
     message_compound_id = f"{chat_id}_{message_id}"
     with db.get_connection() as c:
-        image_id = db.create(c, from_id=from_id, message_compound_id=message_compound_id, text=text)
+        image_id = db.edit_message_details(c, message_compound_id=message_compound_id, text=text)
+        if image_id is None:
+            image_id = db.create(c, from_id=from_id, message_compound_id=message_compound_id, text=text)
         storage.download_image(
             url=_get_file_download_url(file_id),
             image_id=image_id

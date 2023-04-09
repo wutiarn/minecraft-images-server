@@ -1,5 +1,6 @@
 import sqlite3
 import time
+from typing import Any
 
 from mci.db import DATABASE_LOCATION
 from mci.db.model import ImageStatus, ImageMetadata
@@ -22,6 +23,20 @@ def create(c: sqlite3.Connection, from_id: int, message_compound_id: str, text: 
         })
     returned = result.fetchone()
     c.commit()
+    return returned[0]
+
+
+def edit_message_details(c: sqlite3.Connection, message_compound_id: str, text: str) -> int | None:
+    result = c.execute(
+        "UPDATE images SET text = :text WHERE message_compound_id = :message_compound_id RETURNING (id);",
+        {
+            "message_compound_id": message_compound_id,
+            "text": text
+        })
+    returned = result.fetchone()
+    c.commit()
+    if not returned:
+        return None
     return returned[0]
 
 
