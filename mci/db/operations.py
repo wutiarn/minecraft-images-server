@@ -9,15 +9,16 @@ def get_connection() -> sqlite3.Connection:
     return sqlite3.connect(DATABASE_LOCATION)
 
 
-def create(c: sqlite3.Connection, from_id: int, message_compound_id: str) -> int:
+def create(c: sqlite3.Connection, from_id: int, message_compound_id: str, text: str) -> int:
     result = c.execute(
-        "INSERT INTO images (status, created_at, from_id, message_compound_id) "
-        "values (:status, :created_at, :from_id, :message_compound_id) RETURNING (id)",
+        "INSERT INTO images (status, created_at, from_id, message_compound_id, text) "
+        "values (:status, :created_at, :from_id, :message_compound_id, :text) RETURNING (id)",
         {
             "status": ImageStatus.PENDING.value,
             "created_at": int(time.time()),
             "from_id": from_id,
-            "message_compound_id": message_compound_id
+            "message_compound_id": message_compound_id,
+            "text": text
         })
     returned = result.fetchone()
     c.commit()

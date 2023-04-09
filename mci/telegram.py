@@ -13,12 +13,16 @@ logger = logging.getLogger("mci.telegram")
 def handle_event(event: dict):
     if not "message" in event:
         return
-    message = event["message"]
+    message: dict = event["message"]
 
     from_id = message["from"]["id"]
     chat_id = message["chat"]["id"]
     message_id = message["message_id"]
     message_compound_id = f"{chat_id}_{message_id}"
+    message_text = None
+
+    text = message.get("caption")
+
     if from_id not in config.telegram_user_whitelist:
         send_message(
             chat=chat_id,
@@ -35,7 +39,12 @@ def handle_event(event: dict):
         file_id = _get_max_photo_resolution_file_id(message["photo"])
 
     if file_id:
-        image_id = storage.create_image(url=_get_file_download_url(file_id), from_id=from_id, message_compound_id=message_compound_id)
+        image_id = storage.create_image(
+            url=_get_file_download_url(file_id),
+            from_id=from_id,
+            message_compound_id=message_compound_id,
+            text=text
+        )
         send_message(
             chat=message["chat"]["id"],
             reply_message_id=message["message_id"],

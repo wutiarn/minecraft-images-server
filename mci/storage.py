@@ -9,9 +9,9 @@ import requests
 from mci import config, db
 
 
-def create_image(url: str, from_id: int, message_compound_id: str) -> int:
+def create_image(url: str, from_id: int, message_compound_id: str, text: str) -> int:
     with db.get_connection() as c:
-        image_id = db.create(c, from_id=from_id, message_compound_id=message_compound_id)
+        image_id = db.create(c, from_id=from_id, message_compound_id=message_compound_id, text=text)
         now = datetime.datetime.now()
         directory = config.storage_dir.joinpath(str(now.year)).joinpath(f"{now.month:02}")
         directory.mkdir(parents=True, exist_ok=True)
