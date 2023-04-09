@@ -1,5 +1,6 @@
 import sqlite3
 import time
+from typing import Any
 
 from mci.db import DATABASE_LOCATION
 from mci.db.model import ImageStatus, ImageMetadata
@@ -9,15 +10,37 @@ def get_connection() -> sqlite3.Connection:
     return sqlite3.connect(DATABASE_LOCATION)
 
 
-def create(c: sqlite3.Connection) -> int:
-    result = c.execute("INSERT INTO images (status, created_at) values (:status, :created_at) RETURNING (id)",
-                       {"status": ImageStatus.PENDING.value, "created_at": int(time.time())})
+def create(c: sqlite3.Connection, from_id: int, message_compound_id: str, text: str) -> int:
+    result = c.execute(
+        "INSERT INTO images (status, created_at, from_id, message_compound_id, text) "
+        "values (:status, :created_at, :from_id, :message_compound_id, :text) RETURNING (id)",
+        {
+            "status": ImageStatus.PENDING.value,
+            "created_at": int(time.time()),
+            "from_id": from_id,
+            "message_compound_id": message_compound_id,
+            "text": text
+        })
     returned = result.fetchone()
     c.commit()
     return returned[0]
 
 
-def update_metadata(
+def edit_message_details(c: sqlite3.Connection, message_compound_id: str, text: str) -> int | None:
+    result = c.execute(
+        "UPDATE images SET text = :text WHERE message_compound_id = :message_compound_id RETURNING (id);",
+        {
+            "message_compound_id": message_compound_id,
+            "text": text
+        })
+    returned = result.fetchone()
+    c.commit()
+    if not returned:
+        return None
+    return returned[0]
+
+
+def update_image_metadata(
         c: sqlite3.Connection,
         image_id: int,
         path: str,
@@ -47,14 +70,15 @@ def update_metadata(
 
 def load_image(c: sqlite3.Connection, image_id: int):
     result = c.execute("SELECT "
-                    "status, "
-                    "created_at, "
-                    "path, "
-                    "width, "
-                    "height, "
-                    "mimetype, "
-                    "sha256hash "
-                    "FROM images WHERE id = :id", {"id": image_id})
+                       "status, "
+                       "created_at, "
+                       "text, "
+                       "path, "
+                       "width, "
+                       "height, "
+                       "mimetype, "
+                       "sha256hash "
+                       "FROM images WHERE id = :id", {"id": image_id})
     row = result.fetchone()
     if not row:
         return None
@@ -63,9 +87,10 @@ def load_image(c: sqlite3.Connection, image_id: int):
         id=image_id,
         status=ImageStatus(row[0]),
         created_at=row[1],
-        path=row[2],
-        width=row[3],
-        height=row[4],
-        mimetype=row[5],
-        sha256hash=row[6]
+        text=row[2],
+        path=row[3],
+        width=row[4],
+        height=row[5],
+        mimetype=row[6],
+        sha256hash=row[7]
     )

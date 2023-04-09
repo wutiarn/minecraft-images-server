@@ -9,9 +9,8 @@ import requests
 from mci import config, db
 
 
-def create_image(url: str) -> int:
+def download_image(url: str, image_id: int):
     with db.get_connection() as c:
-        image_id = db.create(c)
         now = datetime.datetime.now()
         directory = config.storage_dir.joinpath(str(now.year)).joinpath(f"{now.month:02}")
         directory.mkdir(parents=True, exist_ok=True)
@@ -33,7 +32,7 @@ def create_image(url: str) -> int:
             height = image.height
 
         path = str(file.relative_to(config.storage_dir))
-        db.update_metadata(
+        db.update_image_metadata(
             c=c,
             image_id=image_id,
             path=path,
@@ -42,7 +41,6 @@ def create_image(url: str) -> int:
             mimetype=type.mime,
             sha256hash=hash.hexdigest()
         )
-    return image_id
 
 
 def _rotate_by_exif(image: PIL.Image):

@@ -16,6 +16,7 @@ class ImageMetadata:
     id: int
     status: ImageStatus
     created_at: int
+    text: str
     path: str
     width: int
     height: int
