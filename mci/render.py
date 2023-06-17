@@ -71,7 +71,7 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
         "quality": "30",
         "enable-local-file-access": "",
         "enable-javascript": "",
-        "javascript-delay": 5000,
+        "javascript-delay": 3000,
         "no-stop-slow-scripts": ""
     }
 
@@ -83,7 +83,7 @@ if __name__ == '__main__':
     text = """
     # Insertion Sort
 
-    Сложность по времени: O($n^2$) q
+    Сложность по времени: O($n^2$)
     
     Сложность по памяти: O(1)
     
