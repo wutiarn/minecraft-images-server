@@ -1,10 +1,8 @@
-import pathlib
-
-import imgkit
 import textwrap
 
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+import imgkit
 import markdown
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 jinja_env = Environment(
     loader=FileSystemLoader("templates"),
@@ -13,24 +11,28 @@ jinja_env = Environment(
 template = jinja_env.get_template("markdown.html")
 
 
-def render_html(text: str):
+def render_image(text: str, target_file: str):
+    html = _render_html(text)
+    _render_image_from_html(html, target_file)
+
+
+def _render_html(text: str):
     rendered_md = markdown.markdown(text)
     return template.render(
         payload=rendered_md,
-        font_path=pathlib.Path("fonts/OpenSans.ttf").absolute()
+        # font_path=pathlib.Path("fonts/OpenSans.ttf").absolute()
     )
 
 
-def render_image(html: str, target_file: str):
-    zoom = 5
+def _render_image_from_html(html: str, target_file: str):
+    zoom = 10
     options = {
-        # "transparent": "",
         "zoom": zoom,
         "width": 512 * zoom,
         "disable-smart-width": "",
         "transparent": "",
         "quality": "30",
-        "enable-local-file-access": ""
+        # "enable-local-file-access": ""
     }
 
     imgkit.from_string(html, target_file, options=options)
@@ -49,7 +51,7 @@ if __name__ == '__main__':
         - Three
         """
     text = textwrap.dedent(text)
-    html = render_html(text)
+    html = _render_html(text)
     with open("test.html", "w") as file:
         file.write(html)
-    render_image(html, "out.png")
+    _render_image_from_html(html, "out.png")
