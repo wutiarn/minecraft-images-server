@@ -17,7 +17,7 @@ _default_params = {
     "text_align": "left",
     "font_size": "16px",
     "margin_override": None,
-    "width": 512
+    "width": 3 * 128
 }
 
 def render_image(text: str, target_file: Path):
