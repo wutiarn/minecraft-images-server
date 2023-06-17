@@ -69,6 +69,7 @@ def update_image_metadata(
 
 def load_image(c: sqlite3.Connection, image_id: int):
     result = c.execute("SELECT "
+                       "id, "
                        "status, "
                        "created_at, "
                        "text, "
@@ -82,14 +83,25 @@ def load_image(c: sqlite3.Connection, image_id: int):
     if not row:
         return None
 
-    return ImageMetadata(
-        id=image_id,
-        status=ImageStatus(row[0]),
-        created_at=row[1],
-        text=row[2],
-        path=row[3],
-        width=row[4],
-        height=row[5],
-        mimetype=row[6],
-        sha256hash=row[7]
-    )
+    return ImageMetadata.from_row(row)
+
+
+def load_latest_image(c: sqlite3.Connection):
+    result = c.execute("SELECT "
+                       "id, "
+                       "status, "
+                       "created_at, "
+                       "text, "
+                       "path, "
+                       "width, "
+                       "height, "
+                       "mimetype, "
+                       "sha256hash "
+                       "FROM images "
+                       "ORDER BY id DESC "
+                       "LIMIT 1")
+    row = result.fetchone()
+    if not row:
+        return None
+
+    return ImageMetadata.from_row(row)

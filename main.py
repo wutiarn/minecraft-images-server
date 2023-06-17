@@ -64,7 +64,10 @@ def get_file(image_id: int):
 
 def _get_image(image_id: int) -> ImageMetadata:
     with db.get_connection() as c:
-        image = db.load_image(c, image_id)
+        if image_id == "latest":
+            image = db.load_latest_image(c)
+        else:
+            image = db.load_image(c, image_id)
     if not image:
         abort(404)
     if image.status != ImageStatus.OK:
