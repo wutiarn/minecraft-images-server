@@ -5,7 +5,7 @@
     <style>
         @font-face {
             font-family: Custom;
-            src: url({{ font_path }});
+            src: url({{ base_path }}/files/PTSerif.ttc);
         }
         body {
             {# See https://github.com/wkhtmltopdf/wkhtmltopdf/issues/1522, https://stackoverflow.com/a/59610354 #}
@@ -18,7 +18,7 @@
         #content {
             {#background-color: rgba(255, 255, 255, 0.3);#}
             padding: 5px;
-            color: #ffffff;
+            {#color: #ffffff;#}
             font-family: "Custom", serif;
             width: fit-content;
             text-align: {{ text_align }};
@@ -30,6 +30,15 @@
         {% endif %}
         }
     </style>
+    <script src="{{ base_path }}/files/MathJax-2.7.7/MathJax.js?config=TeX-AMS_SVG"></script>
+    <script>
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [['$','$'], ['\\(','\\)']],
+                processEscapes: true
+            }
+        });
+    </script>
 </head>
 <body>
 <div id="content">

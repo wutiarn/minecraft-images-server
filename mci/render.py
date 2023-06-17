@@ -43,7 +43,7 @@ def _render_html(text: str, params: dict):
     rendered_md = markdown.markdown(text)
     return template.render(
         payload=rendered_md,
-        font_path=pathlib.Path("fonts/PTSerif.ttc").absolute(),
+        base_path=pathlib.Path(".").absolute(),
         **params
     )
 
@@ -69,7 +69,10 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
         "disable-smart-width": "",
         "transparent": "",
         "quality": "30",
-        "enable-local-file-access": ""
+        "enable-local-file-access": "",
+        "enable-javascript": "",
+        "javascript-delay": 5000,
+        "no-stop-slow-scripts": ""
     }
 
     imgkit.from_string(html, target_file, options=options)
@@ -78,7 +81,22 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
 if __name__ == '__main__':
     params = _default_params.copy()
     text = """
-    # Алгоритмы сортировки
+    # Insertion Sort
+
+    Сложность по времени: O($n^2$) q
+    
+    Сложность по памяти: O(1)
+    
+    Основная идея:
+    
+    - Берем элемент из массива, сохраняем его во временную переменную
+    - Перемещаем все элементы, меньшие по размеру, вправо. Высвобождая тем самым место для вставки выбранного выше элемента.
+    - Вставляем выбранный элемент на его законное место
+    
+    Особенности:
+    
+    - Быстрый на небольших массивах
+    - Нет накладных расходов по памяти
     """
     text = textwrap.dedent(text).strip()
     html = _render_html(text, params)
