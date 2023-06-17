@@ -1,3 +1,4 @@
+import pathlib
 import textwrap
 from pathlib import Path
 
@@ -21,7 +22,7 @@ def _render_html(text: str):
     rendered_md = markdown.markdown(text)
     return template.render(
         payload=rendered_md,
-        # font_path=pathlib.Path("fonts/OpenSans.ttf").absolute()
+        font_path=pathlib.Path("fonts/PTSerif.ttc").absolute()
     )
 
 
@@ -33,7 +34,7 @@ def _render_image_from_html(html: str, target_file: Path):
         "disable-smart-width": "",
         "transparent": "",
         "quality": "30",
-        # "enable-local-file-access": ""
+        "enable-local-file-access": ""
     }
 
     imgkit.from_string(html, target_file, options=options)

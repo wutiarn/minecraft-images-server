@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        {#@font-face {#}
-        {#    font-family: Custom;#}
-        {#    src: url({{ font_path }});#}
-        {#}#}
+        @font-face {
+            font-family: Custom;
+            src: url({{ font_path }});
+        }
         body {
             {# See https://github.com/wkhtmltopdf/wkhtmltopdf/issues/1522, https://stackoverflow.com/a/59610354 #}
             display: -webkit-box;
@@ -19,7 +19,7 @@
             {#background-color: rgba(255, 255, 255, 0.3);#}
             padding: 5px;
             color: #ffffff;
-            font-family: "PT Serif", serif;
+            font-family: "Custom", serif;
             width: fit-content;
         }
     </style>
