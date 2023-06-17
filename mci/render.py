@@ -1,4 +1,5 @@
 import pathlib
+import re
 import textwrap
 from pathlib import Path
 
@@ -12,6 +13,7 @@ jinja_env = Environment(
 )
 template = jinja_env.get_template("markdown.html")
 
+_int_regex = re.compile("\d+")
 
 def render_image(text: str, target_file: Path):
     html = _render_html(text)
@@ -19,11 +21,41 @@ def render_image(text: str, target_file: Path):
 
 
 def _render_html(text: str):
+    params = {
+        "text_align": "left",
+        "font_size": "16px",
+        "zero_margin": False
+    }
+    if text.startswith("!"):
+        # Allow style customization if first line looks like "!32,c,m0"
+        first_line_end = text.find("\n")
+        if first_line_end == -1:
+            raise ValueError("Text starting with ! must be multiline")
+        params_line = text[1:first_line_end]
+        text = text[first_line_end + 1:len(text)]
+        _update_params(params_line, params)
+    elif all([line.startswith("#") for line in text.splitlines()]):
+        # Use title style
+        params["text_align"] = "center"
+        params["font_size"] = "32"
+        params["zero_margin"] = True
     rendered_md = markdown.markdown(text)
     return template.render(
         payload=rendered_md,
-        font_path=pathlib.Path("fonts/PTSerif.ttc").absolute()
+        font_path=pathlib.Path("fonts/PTSerif.ttc").absolute(),
+        **params
     )
+
+
+def _update_params(params_line: str, params: dict):
+    split = params_line.split(",")
+    for param in split:
+        if param == "m0":
+            params["zero_margin"] = True
+        elif param == "c":
+            params["text_align"] = "center"
+        elif _int_regex.fullmatch(param):
+            params["font_size"] = int(param)
 
 
 def _render_image_from_html(html: str, target_file: Path):
@@ -42,17 +74,10 @@ def _render_image_from_html(html: str, target_file: Path):
 
 if __name__ == '__main__':
     text = """
-        <center>
-        # WebKit
-        </center>
-        WebKit — свободный движок для отображения веб-страниц, разработанный компанией Apple на основе кода библиотек KHTML и KJS, используемых в графической среде KDE.
-        
-        ## TODO List
-        - One
-        - Two
-        - Three
-        """
-    text = textwrap.dedent(text)
+    # Алгоритмы сортировки
+    #### в прикладных системах
+    """
+    text = textwrap.dedent(text).strip()
     html = _render_html(text)
     with open("test.html", "w") as file:
         file.write(html)

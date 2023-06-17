@@ -21,6 +21,13 @@
             color: #ffffff;
             font-family: "Custom", serif;
             width: fit-content;
+            text-align: {{ text_align }};
+            font-size: {{ font_size }};
+        }
+        #content * {
+        {% if zero_margin %}
+            margin: 0;
+        {% endif %}
         }
     </style>
 </head>
