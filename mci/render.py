@@ -17,7 +17,8 @@ _default_params = {
     "text_align": "left",
     "font_size": "16px",
     "margin_override": None,
-    "width": 3 * 128
+    "width": 3 * 128,
+    "background_opacity": 0
 }
 
 def render_image(text: str, target_file: Path):
@@ -59,6 +60,8 @@ def _update_params(params_line: str, params: dict):
             params["font_size"] = param[1:len(param)] + "px"
         elif param.startswith("w"):
             params["width"] = int(param[1:len(param)])
+        elif param.startswith("b"):
+            params["background_opacity"] = float(param[1:len(param)])
 
 
 def _render_image_from_html(html: str, target_file: Path, params: dict):
@@ -81,6 +84,7 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
 if __name__ == '__main__':
     params = _default_params.copy()
     text = """
+    !b0.3
     # Insertion Sort
 
     Сложность по времени: O($n^2$)
