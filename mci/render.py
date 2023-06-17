@@ -1,4 +1,5 @@
 import textwrap
+from pathlib import Path
 
 import imgkit
 import markdown
@@ -11,7 +12,7 @@ jinja_env = Environment(
 template = jinja_env.get_template("markdown.html")
 
 
-def render_image(text: str, target_file: str):
+def render_image(text: str, target_file: Path):
     html = _render_html(text)
     _render_image_from_html(html, target_file)
 
@@ -24,7 +25,7 @@ def _render_html(text: str):
     )
 
 
-def _render_image_from_html(html: str, target_file: str):
+def _render_image_from_html(html: str, target_file: Path):
     zoom = 10
     options = {
         "zoom": zoom,
@@ -54,4 +55,4 @@ if __name__ == '__main__':
     html = _render_html(text)
     with open("test.html", "w") as file:
         file.write(html)
-    _render_image_from_html(html, "out.png")
+    _render_image_from_html(html, Path("out.png"))

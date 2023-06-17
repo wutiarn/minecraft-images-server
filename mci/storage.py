@@ -1,46 +1,71 @@
 import datetime
 import hashlib
+from pathlib import Path
+from sqlite3 import Connection
 
 import PIL.Image
 import PIL.ExifTags
 import filetype
 import requests
 
-from mci import config, db
+from mci import config, db, render
 
 
-def download_image(url: str, image_id: int):
-    with db.get_connection() as c:
-        now = datetime.datetime.now()
-        directory = config.storage_dir.joinpath(str(now.year)).joinpath(f"{now.month:02}")
-        directory.mkdir(parents=True, exist_ok=True)
-        file = directory.joinpath(f"{image_id}.tmp")
-        hash = hashlib.sha256()
-        with requests.get(url, stream=True) as response:
-            with open(file, "wb") as f:
-                response.raise_for_status()
-                for chunk in response.iter_content(chunk_size=1 * 1024 * 1024):
-                    f.write(chunk)
-                    hash.update(chunk)
-        type = filetype.guess(file)
-        target_file = directory.joinpath(f"{image_id}.{type.extension}")
-        file = file.rename(target_file)
+def render_image(text: str, image_id: int, c: Connection):
+    directory = _get_target_directory()
+    file = directory.joinpath(f"{image_id}.png")
+    render.render_image(text, file)
+    path = str(file.relative_to(config.storage_dir))
+    with PIL.Image.open(file) as image:
+        width = image.width
+        height = image.height
+    db.update_image_metadata(
+        c=c,
+        image_id=image_id,
+        path=path,
+        width=width,
+        height=height,
+        mimetype="image/png",
+        sha256hash=None
+    )
 
-        with PIL.Image.open(file) as pil_image:
-            image = _rotate_by_exif(pil_image)
-            width = image.width
-            height = image.height
 
-        path = str(file.relative_to(config.storage_dir))
-        db.update_image_metadata(
-            c=c,
-            image_id=image_id,
-            path=path,
-            width=width,
-            height=height,
-            mimetype=type.mime,
-            sha256hash=hash.hexdigest()
-        )
+def download_image(url: str, image_id: int, c: Connection):
+    directory = _get_target_directory()
+    file = directory.joinpath(f"{image_id}.tmp")
+    hash = hashlib.sha256()
+    with requests.get(url, stream=True) as response:
+        with open(file, "wb") as f:
+            response.raise_for_status()
+            for chunk in response.iter_content(chunk_size=1 * 1024 * 1024):
+                f.write(chunk)
+                hash.update(chunk)
+    type = filetype.guess(file)
+    target_file = directory.joinpath(f"{image_id}.{type.extension}")
+    file = file.rename(target_file)
+
+    with PIL.Image.open(file) as pil_image:
+        image = _rotate_by_exif(pil_image)
+        width = image.width
+        height = image.height
+
+    path = str(file.relative_to(config.storage_dir))
+    db.update_image_metadata(
+        c=c,
+        image_id=image_id,
+        path=path,
+        width=width,
+        height=height,
+        mimetype=type.mime,
+        sha256hash=hash.hexdigest()
+    )
+
+
+def _get_target_directory() -> Path:
+    now = datetime.datetime.now()
+    directory = config.storage_dir.joinpath(str(now.year)).joinpath(f"{now.month:02}")
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory
 
 
 def _rotate_by_exif(image: PIL.Image):

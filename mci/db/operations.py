@@ -1,6 +1,5 @@
 import sqlite3
 import time
-from typing import Any
 
 from mci.db import DATABASE_LOCATION
 from mci.db.model import ImageStatus, ImageMetadata
@@ -47,7 +46,7 @@ def update_image_metadata(
         width: int,
         height: int,
         mimetype: str,
-        sha256hash: str
+        sha256hash: str | None
 ):
     c.execute("UPDATE images "
               "SET status = :status,"

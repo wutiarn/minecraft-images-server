@@ -23,7 +23,7 @@ def handle_event(event: dict):
     chat_id = message["chat"]["id"]
     message_id = message["message_id"]
 
-    text = message.get("caption")
+    text = message.get("caption") or message.get("text")
 
     if from_id not in config.telegram_user_whitelist:
         send_message(
@@ -40,26 +40,33 @@ def handle_event(event: dict):
     if "photo" in message:
         file_id = _get_max_photo_resolution_file_id(message["photo"])
 
-    if file_id:
-        image_id = _handle_message(
-            from_id=from_id,
-            chat_id=chat_id,
-            message_id=message_id,
-            text=text,
-            file_id=file_id
+    if not text and not file_id:
+        send_message(
+            chat=chat_id,
+            reply_message_id=message_id,
+            text=f"Failed to parse message"
         )
-        if not is_edit:
-            send_message(
-                chat=chat_id,
-                reply_message_id=message_id,
-                text=f"Image uploaded: #{image_id}\n{config.base_url}/i/{image_id}"
-            )
-        else:
-            send_message(
-                chat=chat_id,
-                reply_message_id=message_id,
-                text=f"Image #{image_id} edited\n{config.base_url}/i/{image_id}"
-            )
+        return
+
+    image_id = _handle_message(
+        from_id=from_id,
+        chat_id=chat_id,
+        message_id=message_id,
+        text=text,
+        file_id=file_id
+    )
+    if not is_edit:
+        send_message(
+            chat=chat_id,
+            reply_message_id=message_id,
+            text=f"Image uploaded: #{image_id}\n{config.base_url}/i/{image_id}"
+        )
+    else:
+        send_message(
+            chat=chat_id,
+            reply_message_id=message_id,
+            text=f"Image #{image_id} edited\n{config.base_url}/i/{image_id}"
+        )
 
 
 def _handle_message(from_id: int, chat_id: int, message_id: int, text: str, file_id: str) -> int:
@@ -68,10 +75,18 @@ def _handle_message(from_id: int, chat_id: int, message_id: int, text: str, file
         image_id = db.edit_message_details(c, message_compound_id=message_compound_id, text=text)
         if image_id is None:
             image_id = db.create(c, from_id=from_id, message_compound_id=message_compound_id, text=text)
-        storage.download_image(
-            url=_get_file_download_url(file_id),
-            image_id=image_id
-        )
+        if file_id is not None:
+            storage.download_image(
+                url=_get_file_download_url(file_id),
+                image_id=image_id,
+                c=c
+            )
+        else:
+            storage.render_image(
+                text=text,
+                image_id=image_id,
+                c=c
+            )
         return image_id
 
 
