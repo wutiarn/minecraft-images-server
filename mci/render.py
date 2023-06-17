@@ -21,6 +21,7 @@ _default_params = {
     "background_opacity": 0
 }
 
+
 def render_image(text: str, target_file: Path):
     params = _default_params.copy()
     html = _render_html(text, params)
@@ -61,7 +62,7 @@ def _update_params(params_line: str, params: dict):
         elif param.startswith("w"):
             params["width"] = int(param[1:len(param)])
         elif param.startswith("b"):
-            params["background_opacity"] = float(param[1:len(param)])
+            params["background_opacity"] = float(param[1:len(param)]) / 100
 
 
 def _render_image_from_html(html: str, target_file: Path, params: dict):
@@ -84,7 +85,7 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
 if __name__ == '__main__':
     params = _default_params.copy()
     text = """
-    !b0.3
+    !b30
     # Insertion Sort
 
     Сложность по времени: O($n^2$)
