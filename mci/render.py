@@ -18,7 +18,8 @@ _default_params = {
     "font_size": "16px",
     "margin_override": None,
     "width": 3 * 128,
-    "background_opacity": 0
+    "background_opacity": 0,
+    "white_background": False
 }
 
 
@@ -55,6 +56,10 @@ def _update_params(params_line: str, params: dict):
     for param in split:
         if param == "c":
             params["text_align"] = "center"
+        if param == "wb":
+            params["white_background"] = True
+            if params["background_opacity"] == _default_params["background_opacity"]:
+                params["background_opacity"] = 1.0
         elif param.startswith("m"):
             params["margin_override"] = param[1:len(param)]
         elif param.startswith("f"):
@@ -85,7 +90,7 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
 if __name__ == '__main__':
     params = _default_params.copy()
     text = """
-    !b30
+    !wb,b30
     # Insertion Sort
 
     Сложность по времени: O($n^2$)

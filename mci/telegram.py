@@ -33,6 +33,16 @@ def handle_event(event: dict):
         )
         return
 
+    if text == "/help":
+        with open("files/help.html", "r") as f:
+            help_html = f.read()
+        send_message(
+            chat=chat_id,
+            reply_message_id=message_id,
+            text=help_html
+        )
+        return
+
     file_id = None
     if "document" in message:
         file_id = message["document"]["file_id"]
@@ -113,7 +123,8 @@ def _get_max_photo_resolution_file_id(photos: list[dict]) -> str:
 def send_message(chat: int, text: str, reply_message_id: int):
     data = {
         "chat_id": chat,
-        "text": text
+        "text": text,
+        "parse_mode": "html"
     }
     if reply_message_id:
         data["reply_to_message_id"] = reply_message_id

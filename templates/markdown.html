@@ -16,9 +16,14 @@
             {#justify-content: center;#}
         }
         #content {
+        {% if white_background %}
+            background-color: rgba(255, 255, 255, {{ background_opacity }});
+            color: #000000;
+        {% else %}
             background-color: rgba(0, 0, 0, {{ background_opacity }});
-            padding: 5px;
             color: #ffffff;
+        {% endif %}
+            padding: 5px;
             font-family: "Custom", serif;
             width: fit-content;
             text-align: {{ text_align }};
