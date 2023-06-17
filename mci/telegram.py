@@ -56,17 +56,19 @@ def handle_event(event: dict):
         file_id=file_id
     )
     if not is_edit:
+        logger.info(f"Image #{image_id} uploaded")
         send_message(
             chat=chat_id,
             reply_message_id=message_id,
             text=f"Image uploaded: #{image_id}\n{config.base_url}/i/{image_id}"
         )
     else:
-        send_message(
-            chat=chat_id,
-            reply_message_id=message_id,
-            text=f"Image #{image_id} edited\n{config.base_url}/i/{image_id}"
-        )
+        logger.info(f"Image #{image_id} edited")
+        # send_message(
+        #     chat=chat_id,
+        #     reply_message_id=message_id,
+        #     text=f"Image #{image_id} edited\n{config.base_url}/i/{image_id}"
+        # )
 
 
 def _handle_message(from_id: int, chat_id: int, message_id: int, text: str, file_id: str) -> int:
