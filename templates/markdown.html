@@ -25,8 +25,8 @@
             font-size: {{ font_size }};
         }
         #content * {
-        {% if zero_margin %}
-            margin: 0;
+        {% if margin_override != None %}
+            margin: {{ margin_override }};
         {% endif %}
         }
     </style>

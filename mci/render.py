@@ -13,21 +13,22 @@ jinja_env = Environment(
 )
 template = jinja_env.get_template("markdown.html")
 
+_default_params = {
+    "text_align": "left",
+    "font_size": "16px",
+    "margin_override": None,
+    "width": 512
+}
 
 def render_image(text: str, target_file: Path):
-    params = {
-        "text_align": "left",
-        "font_size": "16px",
-        "zero_margin": False,
-        "width": 512
-    }
+    params = _default_params.copy()
     html = _render_html(text, params)
     _render_image_from_html(html, target_file, params)
 
 
 def _render_html(text: str, params: dict):
     if text.startswith("!"):
-        # Allow style customization if first line looks like "!f32,c,m0"
+        # Allow style customization if first line looks like "!f32,w1024,c,m0"
         first_line_end = text.find("\n")
         if first_line_end == -1:
             raise ValueError("Text starting with ! must be multiline")
@@ -38,7 +39,7 @@ def _render_html(text: str, params: dict):
         # Use title style
         params["text_align"] = "center"
         params["font_size"] = "32"
-        params["zero_margin"] = True
+        params["margin_override"] = "0"
     rendered_md = markdown.markdown(text)
     return template.render(
         payload=rendered_md,
@@ -50,12 +51,12 @@ def _render_html(text: str, params: dict):
 def _update_params(params_line: str, params: dict):
     split = params_line.split(",")
     for param in split:
-        if param == "m0":
-            params["zero_margin"] = True
-        elif param == "c":
+        if param == "c":
             params["text_align"] = "center"
+        elif param.startswith("m"):
+            params["margin_override"] = param[1:len(param)]
         elif param.startswith("f"):
-            params["font_size"] = int(param[1:len(param)])
+            params["font_size"] = param[1:len(param)] + "px"
         elif param.startswith("w"):
             params["width"] = int(param[1:len(param)])
 
@@ -75,14 +76,9 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
 
 
 if __name__ == '__main__':
-    params = {
-        "text_align": "left",
-        "font_size": "16px",
-        "zero_margin": False,
-        "width": 512
-    }
+    params = _default_params.copy()
     text = """
-    !w1024,m0
+    !f32,w1024,c,m0
     # Алгоритмы сортировки
     #### в прикладных системах
     """
