@@ -38,7 +38,7 @@ def _render_html(text: str, params: dict):
     elif all([line.startswith("#") for line in text.splitlines()]):
         # Use title style
         params["text_align"] = "center"
-        params["font_size"] = "32"
+        params["font_size"] = "26"
         params["margin_override"] = "0"
     rendered_md = markdown.markdown(text)
     return template.render(
@@ -78,9 +78,7 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
 if __name__ == '__main__':
     params = _default_params.copy()
     text = """
-    !f32,w1024,c,m0
     # Алгоритмы сортировки
-    #### в прикладных системах
     """
     text = textwrap.dedent(text).strip()
     html = _render_html(text, params)
