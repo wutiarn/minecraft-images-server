@@ -17,7 +17,7 @@ _default_params = {
     "text_align": "left",
     "font_size": "16px",
     "margin_override": None,
-    "width": 3 * 128,
+    "width": 512,
     "background_opacity": 0,
     "white_background": False
 }
