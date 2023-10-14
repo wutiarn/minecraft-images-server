@@ -84,7 +84,7 @@ def _render_image_from_html(html: str, target_file: Path, params: dict):
         "no-stop-slow-scripts": ""
     }
 
-    imgkit.from_string(html, target_file, options=options)
+    imgkit.from_string(html, target_file.absolute(), options=options)
 
 
 if __name__ == '__main__':

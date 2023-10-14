@@ -3,10 +3,9 @@ import logging
 import os
 
 import waitress as waitress
-from flask import Flask, abort, request, redirect, send_file, stream_with_context, Response
+from flask import Flask, abort, request, stream_with_context, Response, send_file
 
-from mci import memos
-from mci.config import memos_public_url
+from mci import memos, storage
 from mci.db import migrations
 
 flask_app = Flask(__name__)
@@ -45,7 +44,8 @@ def get_file(memo_id: int):
     if content_image_resource:
         resource_response = memos.get_resource(token, content_image_resource.id)
         return Response(stream_with_context(resource_response.iter_content(chunk_size=4096)), content_type = resource_response.headers['content-type'])
-    return "TODO"
+    file = storage.get_image_file(content)
+    return send_file(file, "image/png")
 
 def _get_authorization_token():
     header = request.headers.get("Authorization")
