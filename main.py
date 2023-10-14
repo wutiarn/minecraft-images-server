@@ -85,6 +85,6 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] [%(threadName)s] %(name)s - %(message)s")
     migrations.apply_migrations()
     if os.getenv("DEV"):
-        flask_app.run(debug=True, host="0.0.0.0", port=8080)
+        flask_app.run(debug=True, host="0.0.0.0", port=8801)
     else:
         waitress.serve(flask_app)
