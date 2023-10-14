@@ -6,7 +6,7 @@ import secrets
 import waitress as waitress
 from flask import Flask, abort, request, send_file, render_template
 
-from mci import config, telegram, db
+from mci import config, telegram, db, memos
 from mci.db import migrations
 from mci.db.model import ImageStatus, ImageMetadata
 
@@ -38,20 +38,22 @@ def get_metadata_page(image_id: int):
     return render_template("image.html", image=image, date=date, storage_url=url)
 
 
-@flask_app.route(f"/i/<image_id>/meta.json", methods=["GET"])
-def get_metadata_json(image_id: int):
-    image = _get_image(image_id)
-    url = f"{config.base_url}{_get_storage_url(image_id)}"
-    return {
-        "id": image.id,
-        "url": url,
-        "created_at": image.created_at,
-        "width": image.width,
-        "height": image.height,
-        "mimetype": image.mimetype,
-        "sha256hash": image.sha256hash,
-        "description": image.text
-    }
+@flask_app.route(f"/i/<id>/meta.json", methods=["GET"])
+def get_metadata_json(id: int):
+    token = request.headers.get("Authorization")
+    return memos.get_memos_content(token, id)
+    # image = _get_image(image_id)
+    # url = f"{config.base_url}{_get_storage_url(image_id)}"
+    # return {
+    #     "id": image.id,
+    #     "url": url,
+    #     "created_at": image.created_at,
+    #     "width": image.width,
+    #     "height": image.height,
+    #     "mimetype": image.mimetype,
+    #     "sha256hash": image.sha256hash,
+    #     "description": image.text
+    # }
 
 
 @flask_app.route(f"{_storage_base_url}/<image_id>", methods=["GET"])

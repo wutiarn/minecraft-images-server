@@ -8,3 +8,4 @@ pytz==2023.3
 waitress==2.1.2
 imgkit==1.2.3
 Markdown==3.4.3
+dataclasses-json==0.6.1
