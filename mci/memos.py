@@ -17,6 +17,7 @@ class MemosResource:
 class MemosContent:
     id: str
     creator_username: str
+    created_at: int
     content: str
     resources: list[MemosResource]
 
@@ -29,6 +30,7 @@ class MemosContent:
         return MemosContent(
             id=dto.get("id"),
             creator_username=dto.get("creatorUsername"),
+            created_at=dto.get("createdTs"),
             content=dto.get("content"),
             resources=resources
         )
@@ -41,16 +43,18 @@ class MemosContent:
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class MemosMinecraftMetadata:
-    post_url: str
-    creator_username: str
-    content: str
+    id: str
+    url: str
+    created_at: int
+    description: str
 
 def get_memos_metadata(token: str, memo_id: int) -> MemosMinecraftMetadata:
     memos_content = _get_memos_content(token, memo_id)
     return MemosMinecraftMetadata(
-        post_url=f"{memos_public_url}/m/{memos_content.id}",
-        creator_username=memos_content.creator_username,
-        content=memos_content.content
+        id=memos_content.id,
+        url=f"{memos_public_url}/m/{memos_content.id}",
+        created_at=memos_content.created_at,
+        description=memos_content.content
     )
 
 
