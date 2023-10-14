@@ -73,6 +73,9 @@ def get_memos_content(token: str, memo_id: int) -> MemosContent:
     _handle_memo_error(response)
     return MemosContent.from_dto(response.json())
 
+def get_resource(token: str, resource_id: int):
+    return requests.get(f"{memos_url}/o/r/{resource_id}", headers=_build_headers(token))
+
 def _handle_memo_error(response):
     if response.status_code != 200:
         abort(response.status_code, "Received error from memo: " + response.text)
