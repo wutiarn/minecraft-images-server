@@ -3,12 +3,17 @@ import hashlib
 from pathlib import Path
 from sqlite3 import Connection
 
-import PIL.Image
 import PIL.ExifTags
+import PIL.Image
 import filetype
 import requests
 
 from mci import config, db, render
+from mci.memos import MemosContent
+
+
+def get_image_id(content: MemosContent):
+    return content.id + "_" + hashlib.sha256(content.content).hexdigest()
 
 
 def render_image(text: str, image_id: int, c: Connection):

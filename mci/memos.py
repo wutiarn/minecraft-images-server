@@ -3,7 +3,8 @@ from dataclasses import dataclass
 import requests
 from dataclasses_json import dataclass_json, LetterCase
 
-from mci.config import memos_url, memos_public_url
+from mci import storage
+from mci.config import memos_url, memos_public_url, base_url
 
 
 @dataclass
@@ -40,22 +41,26 @@ class MemosContent:
 
 @dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
-class MemosMinecraftDto:
+class MemosMinecraftMetadata:
     post_url: str
-    image_url: str
     creator_username: str
     content: str
 
-def get_memos_image(token: str, memo_id: int) -> MemosMinecraftDto:
+def get_memos_metadata(token: str, memo_id: int) -> MemosMinecraftMetadata:
     memos_content = _get_memos_content(token, memo_id)
     memos_image_resource = memos_content.get_image_resource()
     if memos_image_resource:
-        return MemosMinecraftDto(
+        return MemosMinecraftMetadata(
             post_url=f"{memos_public_url}/m/{memos_content.id}",
-            image_url=f"{memos_public_url}/o/r/{memos_image_resource.id}",
             creator_username=memos_content.creator_username,
             content=memos_content.content
         )
+
+    return MemosMinecraftMetadata(
+        post_url=f"{memos_public_url}/m/{memos_content.id}",
+        creator_username=memos_content.creator_username,
+        content=memos_content.content
+    )
 
 
 def _get_memos_content(token: str, memo_id: int) -> MemosContent:
