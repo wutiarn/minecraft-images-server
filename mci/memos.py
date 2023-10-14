@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 
 import requests
@@ -6,6 +7,7 @@ from flask import abort
 
 from mci.config import memos_url, memos_public_url
 
+logger = logging.getLogger("memos")
 
 @dataclass
 class MemosResource:
@@ -78,7 +80,9 @@ def get_resource(token: str, resource_id: int):
 
 def _handle_memo_error(response):
     if response.status_code != 200:
-        abort(response.status_code, "Received error from memo: " + response.text)
+        response_text = response.text
+        logger.error(f"Received error from memos. Url: {response.url}. Status: {response.status_code}. Body: {response_text}")
+        abort(response.status_code, "Received error from memo: " + response_text)
 
 
 def _build_headers(token: str):
