@@ -1,42 +1,16 @@
-import datetime
+import logging
 import logging
 import os
-import secrets
 
 import waitress as waitress
-from flask import Flask, abort, request, send_file, render_template
+from flask import Flask, abort, request
 
-from mci import config, telegram, db, memos
+from mci import memos
 from mci.db import migrations
-from mci.db.model import ImageStatus, ImageMetadata
 
 flask_app = Flask(__name__)
 
 logger = logging.getLogger("main")
-_storage_base_url = "/storage/i"
-
-
-@flask_app.route(f"/tg/hook/<token>", methods=["POST"])
-def handle_telegram_hook(token: str):
-    if not secrets.compare_digest(token, config.telegram_token):
-        return abort(404)
-    logger.info(f"Received webhook: {request.data.decode()}")
-    try:
-        telegram.handle_event(request.json)
-    except Exception:
-        logger.error("Failed to handle webhook", exc_info=True)
-    return "OK"
-
-
-@flask_app.route(f"/i/<image_id>", methods=["GET"])
-def get_metadata_page(image_id: int):
-    image = _get_image(image_id)
-    date = datetime.datetime.fromtimestamp(image.created_at) \
-        .astimezone(config.timezone) \
-        .strftime(config.timestamp_format)
-    url = _get_storage_url(image_id)
-    return render_template("image.html", image=image, date=date, storage_url=url)
-
 
 @flask_app.route(f"/i/<memo_id>/meta.json", methods=["GET"])
 def get_metadata_json(memo_id):
@@ -62,29 +36,10 @@ def get_metadata_json(memo_id):
     # }
 
 
-@flask_app.route(f"{_storage_base_url}/<image_id>", methods=["GET"])
-def get_file(image_id: int):
-    image = _get_image(image_id)
-    file = config.storage_dir.joinpath(image.path)
-    extension = image.path.split(".")[-1]
-    return send_file(file, mimetype=image.mimetype, download_name=f"{image_id}.{extension}")
-
-
-def _get_image(image_id: int) -> ImageMetadata:
-    with db.get_connection() as c:
-        if image_id == "latest":
-            image = db.load_latest_image(c)
-        else:
-            image = db.load_image(c, image_id)
-    if not image:
-        abort(404)
-    if image.status != ImageStatus.OK:
-        raise abort(404)
-    return image
-
-
-def _get_storage_url(image_id: int):
-    return f"{_storage_base_url}/{image_id}"
+@flask_app.route(f"/storage/i/<memo_id>", methods=["GET"])
+def get_file(memo_id: int):
+    memos.get_memos_metadata(_get_authorization_token(), memo_id)
+    pass
 
 def _get_authorization_token():
     header = request.headers.get("Authorization")

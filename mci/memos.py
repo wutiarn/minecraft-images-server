@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import requests
 from dataclasses_json import dataclass_json, LetterCase
+from flask import abort
 
 from mci.config import memos_url, memos_public_url
 
@@ -63,11 +64,17 @@ def get_memos_metadata(token: str, memo_id: int) -> MemosMinecraftMetadata:
 
 def _get_memos_content(token: str, memo_id: int) -> MemosContent:
     response = requests.get(f"{memos_url}/api/v1/memo/{memo_id}", headers=_build_headers(token))
+    _handle_memo_error(response)
     return MemosContent.from_dto(response.json())
 
 def _get_latest_memos_content(token: str) -> MemosContent:
     response = requests.get(f"{memos_url}/api/v1/memo?limit=1", headers=_build_headers(token))
+    _handle_memo_error(response)
     return MemosContent.from_dto(response.json()[0])
+
+def _handle_memo_error(response):
+    if response.status_code != 200:
+        abort(response.status_code, "Received error from memo: " + response.text)
 
 
 def _build_headers(token: str):
