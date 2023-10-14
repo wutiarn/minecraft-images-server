@@ -38,9 +38,16 @@ def get_metadata_page(image_id: int):
     return render_template("image.html", image=image, date=date, storage_url=url)
 
 
-@flask_app.route(f"/i/<id>/meta.json", methods=["GET"])
-def get_metadata_json(id: int):
-    return memos.get_memos_metadata(_get_authorization_token(), id).to_dict()
+@flask_app.route(f"/i/<memo_id>/meta.json", methods=["GET"])
+def get_metadata_json(memo_id):
+    if memo_id == "latest":
+        memo_id = None
+    else:
+        try:
+            memo_id = int(memo_id)
+        except ValueError:
+            abort(400, "Failed to parse memo id " + memo_id)
+    return memos.get_memos_metadata(_get_authorization_token(), memo_id).to_dict()
     # image = _get_image(image_id)
     # url = f"{config.base_url}{_get_storage_url(image_id)}"
     # return {

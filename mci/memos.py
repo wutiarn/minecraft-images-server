@@ -49,7 +49,10 @@ class MemosMinecraftMetadata:
     description: str
 
 def get_memos_metadata(token: str, memo_id: int) -> MemosMinecraftMetadata:
-    memos_content = _get_memos_content(token, memo_id)
+    if memo_id:
+        memos_content = _get_memos_content(token, memo_id)
+    else:
+        memos_content = _get_latest_memos_content(token)
     return MemosMinecraftMetadata(
         id=memos_content.id,
         url=f"{memos_public_url}/m/{memos_content.id}",
@@ -61,6 +64,10 @@ def get_memos_metadata(token: str, memo_id: int) -> MemosMinecraftMetadata:
 def _get_memos_content(token: str, memo_id: int) -> MemosContent:
     response = requests.get(f"{memos_url}/api/v1/memo/{memo_id}", headers=_build_headers(token))
     return MemosContent.from_dto(response.json())
+
+def _get_latest_memos_content(token: str) -> MemosContent:
+    response = requests.get(f"{memos_url}/api/v1/memo?limit=1", headers=_build_headers(token))
+    return MemosContent.from_dto(response.json()[0])
 
 
 def _build_headers(token: str):
