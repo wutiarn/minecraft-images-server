@@ -3,9 +3,10 @@ import logging
 import os
 
 import waitress as waitress
-from flask import Flask, abort, request
+from flask import Flask, abort, request, redirect
 
 from mci import memos
+from mci.config import memos_public_url
 from mci.db import migrations
 
 flask_app = Flask(__name__)
@@ -21,7 +22,7 @@ def get_metadata_json(memo_id):
             memo_id = int(memo_id)
         except ValueError:
             abort(400, "Failed to parse memo id " + memo_id)
-    return memos.get_memos_metadata(_get_authorization_token(), memo_id).to_dict()
+    return memos.get_memos_minecraft_metadata(_get_authorization_token(), memo_id).to_dict()
     # image = _get_image(image_id)
     # url = f"{config.base_url}{_get_storage_url(image_id)}"
     # return {
@@ -38,8 +39,12 @@ def get_metadata_json(memo_id):
 
 @flask_app.route(f"/storage/i/<memo_id>", methods=["GET"])
 def get_file(memo_id: int):
-    memos.get_memos_metadata(_get_authorization_token(), memo_id)
-    pass
+    content = memos.get_memos_content(_get_authorization_token(), memo_id)
+    content_image_resource = content.get_image_resource()
+    if content_image_resource:
+        url = f"{memos_public_url}/o/r/{content_image_resource.id}"
+        return redirect(url)
+    return "TODO"
 
 def _get_authorization_token():
     header = request.headers.get("Authorization")
