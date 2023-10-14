@@ -40,8 +40,7 @@ def get_metadata_page(image_id: int):
 
 @flask_app.route(f"/i/<id>/meta.json", methods=["GET"])
 def get_metadata_json(id: int):
-    token = request.headers.get("Authorization")
-    return memos.get_memos_image(token, id).to_dict()
+    return memos.get_memos_image(_get_authorization_token(), id).to_dict()
     # image = _get_image(image_id)
     # url = f"{config.base_url}{_get_storage_url(image_id)}"
     # return {
@@ -79,6 +78,12 @@ def _get_image(image_id: int) -> ImageMetadata:
 
 def _get_storage_url(image_id: int):
     return f"{_storage_base_url}/{image_id}"
+
+def _get_authorization_token():
+    header = request.headers.get("Authorization")
+    if not header:
+        abort(401, "No authorization header present")
+    return header.replace("Bearer ", "")
 
 
 if __name__ == '__main__':
