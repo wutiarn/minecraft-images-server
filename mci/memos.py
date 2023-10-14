@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import requests
+from dataclasses_json import dataclass_json, LetterCase
 
 from mci.config import memos_url
 
@@ -22,6 +23,7 @@ class MemosResource:
     type: str
 
 
+@dataclass_json(letter_case=LetterCase.CAMEL)
 @dataclass
 class MemosContent:
     creator_username: str
