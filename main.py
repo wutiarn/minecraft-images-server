@@ -49,4 +49,4 @@ if __name__ == '__main__':
     if os.getenv("DEV"):
         flask_app.run(debug=True, host="0.0.0.0", port=8801)
     else:
-        waitress.serve(flask_app)
+        waitress.serve(flask_app, threads=int(os.getenv("APP_THREADS", "32")))
